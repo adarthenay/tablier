@@ -43,3 +43,19 @@ class TestRecipeSimpleRowMerger(unittest.TestCase):
 		self.assertEquals(mg.next(), ["2", "j", "k", "l"])
 		self.assertEquals(mg.next(), ["3", "m", "n\nq", "o\nr"])
 		self.assertRaises(StopIteration, mg.next)
+		
+	def test_simple_merge_with_iterator_and_select(self):
+		INPUT = iter([
+			["1", "a", "b", "c"],
+			["1", "d", "e", "f"],
+			["1", "g", "h", "i"],
+			["2", "j", "k", "l"],
+			["3", "m", "n", "o"],
+			["3", "p", "q", "r"],
+		])
+		PARAMS = {"key": 0, "cols": [2, 3]}
+		mg = simple_row_merger(INPUT, PARAMS)
+		self.assertEquals(mg.next(), ["1", "a", "b\ne\nh", "c\nf\ni"])
+		self.assertEquals(mg.next(), ["2", "j", "k", "l"])
+		self.assertEquals(mg.next(), ["3", "m", "n\nq", "o\nr"])
+		self.assertRaises(StopIteration, mg.next)

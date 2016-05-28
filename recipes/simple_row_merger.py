@@ -1,25 +1,35 @@
+def get_item_or_none(itr):
+	try:
+		ret = itr.next()
+	except StopIteration:
+		ret = None
+	return ret
+
 def simple_row_merger(input_table, parameters={"key": 0}):
 	if 'key' not in parameters.keys() or not isinstance(parameters['key'], int):
 		raise Exception("Second argument should have an integer 'key' key")
 	key = parameters["key"]
-	if 'cols' not in parameters.keys():
-		cols = [i for i in range(len(input_table)) if i <> key]
-	else:
-		cols = parameters['cols']
-	line_to_output = None
-	for line_num, line in enumerate(input_table):
-		if line_to_output is None:
-			line_to_output = line
-		if line_num < len(input_table)-1:
-			next_line = input_table[line_num+1]
-			if next_line[key] == line_to_output[key]:
-				for col_index, next_line_item in enumerate(next_line):
-					if col_index == key:
-						pass
-					elif col_index in cols:
-						line_to_output[col_index] = line_to_output[col_index] + '\n' + next_line_item
+	cols = None
+
+	input_table = iter(input_table)
+	current_row = get_item_or_none(input_table)
+
+	while current_row is not None:
+		if cols is None:
+			if 'cols' not in parameters.keys():
+				cols = [i for i in range(len(current_row)) if i <> key]
 			else:
-				yield line_to_output
-				line_to_output = None
+				cols = parameters['cols']
+
+		next_row = get_item_or_none(input_table)
+
+		while next_row is not None and next_row[key] == current_row[key]:
+			for idx in cols:
+				current_row[idx] = current_row[idx] + '\n' + next_row[idx]
+			next_row = get_item_or_none(input_table)
+		yield current_row
+
+		if next_row is not None and next_row[key] <> current_row[key]:
+			current_row = next_row
 		else:
-			yield line_to_output 
+			current_row = get_item_or_none(input_table)
